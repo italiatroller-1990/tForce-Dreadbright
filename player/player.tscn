@@ -1,0 +1,420 @@
+[gd_scene load_steps=15 format=3 uid="uid://dkvmj0pdtlf8g"]
+
+[ext_resource type="PackedScene" uid="uid://b1fexeb7hm7oy" path="res://player/PlayerBullet.tscn" id="1_y083q"]
+[ext_resource type="AudioStream" uid="uid://bt23ovrivcsvv" path="res://sfx/jump.mp3" id="3_yidpl"]
+[ext_resource type="AudioStream" uid="uid://cyq2o5ni4kfwh" path="res://sfx/swing.mp3" id="5_28mk4"]
+[ext_resource type="PackedScene" uid="uid://kax0vlfyxiks" path="res://voxel/pistol.tscn" id="6_34j3y"]
+[ext_resource type="PackedScene" uid="uid://sxhxbn4hv6ds" path="res://voxel/sword.tscn" id="6_85jpn"]
+[ext_resource type="Texture2D" uid="uid://bs0lucpnflrc8" path="res://textures/muzzle.png" id="6_qrmvg"]
+
+[sub_resource type="GDScript" id="GDScript_nm3gu"]
+resource_name = "Player definitions"
+script/source = "extends CharacterBody3D
+# variables
+var mouse_sensitivity = 0.005
+var shoot = 1
+var pistol_select = 1
+var switch_weapon = 1
+var sword_select = 0
+var gravity = ProjectSettings.get_setting(\"physics/3d/default_gravity\")
+var speed = 7
+var jump_speed = 5
+@onready var anim_player = $Camera3D/AnimationPlayer
+@onready var sword = $Camera3D/sword 
+@onready var pistol = $Camera3D/pistol
+@onready var sword_collision = $Camera3D/sword/SwordCollision
+@export var bullet:PackedScene
+
+## hide ui elements and capture mouse
+func _ready():
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	$Camera3D/sword/SwordCollision/CollisionShape3D.disabled = true
+	sword_collision.monitoring = false
+	$UI/Pause.hide()
+#	$UI/Hint.hide()
+
+## movement
+func _physics_process(delta):
+	velocity.y += -gravity * delta
+	var input = Input.get_vector(\"left\", \"right\", \"forward\", \"back\")
+	var movement_dir = transform.basis * Vector3(input.x, 0, input.y)
+	velocity.x = movement_dir.x * speed
+	velocity.z = movement_dir.z * speed
+	move_and_slide()
+# play sfx while jumping
+	if is_on_floor() and Input.is_action_pressed(\"jump\"):
+		velocity.y = jump_speed
+		$Camera3D/jump.play()
+## shooting
+	if Input.is_action_pressed(\"shoot\") and shoot == 1 and sword_select == 1 and pistol_select == 0:
+		$Camera3D/AnimationPlayer.play(\"swing\")
+		$Camera3D/swing.play()
+		sword_collision.monitoring = true
+		$Camera3D/sword/SwordCollision/CollisionShape3D.disabled = false
+		shoot = 0
+		switch_weapon = 0
+	if Input.is_action_pressed(\"shoot\") and shoot == 1 and pistol_select == 1 and sword_select == 0:
+		var b = bullet.instantiate()
+		owner.add_child(b)
+		b.transform = $Camera3D/pos.global_transform
+		shoot = 0
+		switch_weapon = 0
+		anim_player.play(\"shoot\")
+## weapon switcher definitions
+	if sword_select == 1:
+		sword.show()
+		pistol.hide()
+		$Camera3D/sword/SwordCollision/CollisionShape3D.disabled = false
+	if pistol_select == 1:
+		pistol.show()
+		sword.hide()
+		$Camera3D/sword/SwordCollision/CollisionShape3D.disabled = true
+func _input(event):
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		rotate_y(-event.relative.x * mouse_sensitivity)
+		$Camera3D.rotate_x(-event.relative.y * mouse_sensitivity)
+		$Camera3D.rotation.x = clampf($Camera3D.rotation.x, -deg_to_rad(70), deg_to_rad(70))
+	if event.is_action_pressed(\"ui_cancel\"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		$UI/Pause.show()
+		$UI/Crosshair.hide()
+		get_tree().paused = true
+		
+## weapon switcher
+	if event.is_action_pressed(\"weapon1\") and switch_weapon == 1:
+		pistol_select = 0
+		sword_select = 1
+	if event.is_action_pressed(\"weapon2\") and switch_weapon == 1:
+		pistol_select = 1
+		sword_select = 0
+
+## pause funcs
+func _on_unpause_pressed() -> void:
+	get_tree().paused = false
+	$UI/Crosshair.show()
+	$UI/Pause.hide()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+func _on_exit_pressed() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file(\"res://scenes/main_menu.tscn\")
+		
+func _on_sword_collision_area_entered(area: Area3D) -> void:
+	if area.is_in_group(\"enemy\"):
+		print(\"enemy hit\")
+	print(\"solid hit\")
+
+
+func _on_animation_player_animation_finished(anim_name: StringName) -> void:
+	if anim_name == \"shoot\":
+		anim_player.play(\"RESET\")
+		shoot = 1
+		switch_weapon = 1
+		$Camera3D/pistol/muzflash.hide()
+	if anim_name == \"swing\":
+		anim_player.play(\"RESET\")
+		shoot = 1
+		switch_weapon = 1
+
+
+func _on_animation_player_animation_started(anim_name: StringName) -> void:
+	if anim_name == \"shoot\":
+		$Camera3D/pistol/muzflash.show()
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_dcvek"]
+
+[sub_resource type="Animation" id="Animation_1aya2"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("sword:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.28, -0.448663, -0.235)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("sword:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.129773, -1.79881, 0.508719)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("sword/SwordCollision:monitoring")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [false]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("pistol:position")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0.174, -0.574, -0.647)]
+}
+tracks/4/type = "value"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("pistol:rotation")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, -1.5708, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_hoe6h"]
+resource_name = "shoot"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("pistol:position")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.173989, -0.573663, -0.647246), Vector3(0.173989, -0.573663, -0.514685), Vector3(0.173989, -0.573663, -0.647246)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("pistol:rotation")
+tracks/1/interp = 2
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0, -1.5708, 0), Vector3(-3.60142e-08, -1.5708, -0.968274), Vector3(0, -1.5708, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_oudsf"]
+resource_name = "swing"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("sword:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.28, -0.448663, -0.235), Vector3(0.28, -0.448663, -0.37), Vector3(0.13, -0.262093, -0.475)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("sword:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(0.129773, -1.79881, 0.508719), Vector3(1.309, 2.09439, -1.5708), Vector3(1.309, 2.61799, -1.5708)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("sword/SwordCollision:monitoring")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.166667),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2y2ye"]
+_data = {
+"RESET": SubResource("Animation_1aya2"),
+"shoot": SubResource("Animation_hoe6h"),
+"swing": SubResource("Animation_oudsf")
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3mypf"]
+size = Vector3(14.2102, 101.664, 54.3815)
+
+[sub_resource type="LabelSettings" id="LabelSettings_3mqot"]
+font_size = 54
+font_color = Color(0.984314, 0.945098, 0.780392, 1)
+
+[node name="Player" type="CharacterBody3D"]
+floor_constant_speed = true
+script = SubResource("GDScript_nm3gu")
+bullet = ExtResource("1_y083q")
+
+[node name="collision" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_dcvek")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.567659, 0)
+fov = 90.0
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
+libraries = {
+"": SubResource("AnimationLibrary_2y2ye")
+}
+
+[node name="jump" type="AudioStreamPlayer3D" parent="Camera3D"]
+stream = ExtResource("3_yidpl")
+
+[node name="swing" type="AudioStreamPlayer3D" parent="Camera3D"]
+stream = ExtResource("5_28mk4")
+
+[node name="pos" type="Marker3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00500011, -0.414285, -0.841936)
+
+[node name="sword" parent="Camera3D" instance=ExtResource("6_85jpn")]
+transform = Transform3D(-0.00496053, -5.71197e-09, -0.0185131, 0.00925655, 0.0165984, -0.00248027, 0.0160328, -0.0095831, -0.00429595, 0.28, -0.448663, -0.235)
+
+[node name="SwordCollision" type="Area3D" parent="Camera3D/sword" groups=["mace"]]
+transform = Transform3D(1, 0, 1.49012e-08, -2.98023e-08, 1, -7.45058e-09, -1.49012e-08, 0, 1, 0, 0, 0)
+monitoring = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Camera3D/sword/SwordCollision"]
+transform = Transform3D(0.999999, -5.96046e-08, 1.05798e-06, 2.38419e-07, 1, -4.32134e-07, 8.9407e-08, 0, 0.999999, -0.172902, -7.71753, -6.15922)
+shape = SubResource("BoxShape3D_3mypf")
+
+[node name="pistol" parent="Camera3D" instance=ExtResource("6_34j3y")]
+transform = Transform3D(-1.03086e-07, 0, -0.0284769, 0, 0.0284769, 0, 0.0284769, 0, -1.03086e-07, 0.174, -0.574, -0.647)
+
+[node name="muzflash" type="Sprite3D" parent="Camera3D/pistol"]
+transform = Transform3D(12.023, 0, 3.63798e-12, 0, 12.023, 0, -3.63798e-12, 0, 12.023, -6.53631, 5.23236, 1.48043)
+visible = false
+billboard = 2
+texture_filter = 0
+texture = ExtResource("6_qrmvg")
+
+[node name="UI" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Pause" type="Panel" parent="UI"]
+process_mode = 2
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -147.0
+offset_top = -112.0
+offset_right = 147.0
+offset_bottom = 112.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/Pause"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -75.0
+offset_top = -46.5
+offset_right = 75.0
+offset_bottom = 46.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="UI/Pause/VBoxContainer"]
+layout_mode = 2
+text = "PAUSED"
+horizontal_alignment = 1
+
+[node name="unpause" type="Button" parent="UI/Pause/VBoxContainer"]
+layout_mode = 2
+text = "Unpause"
+
+[node name="exit" type="Button" parent="UI/Pause/VBoxContainer"]
+layout_mode = 2
+text = "Exit to main menu"
+
+[node name="Crosshair" type="Label" parent="UI"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.5
+offset_right = 20.0
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+text = "+"
+label_settings = SubResource("LabelSettings_3mqot")
+horizontal_alignment = 1
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -40.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Panel" type="Panel" parent="HUD"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -55.9
+anchor_right = 56.1
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
+update_mode = 1
+
+[connection signal="animation_finished" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
+[connection signal="animation_started" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_started"]
+[connection signal="area_entered" from="Camera3D/sword/SwordCollision" to="." method="_on_sword_collision_area_entered"]
+[connection signal="pressed" from="UI/Pause/VBoxContainer/unpause" to="." method="_on_unpause_pressed"]
+[connection signal="pressed" from="UI/Pause/VBoxContainer/exit" to="." method="_on_exit_pressed"]

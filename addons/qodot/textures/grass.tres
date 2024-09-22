@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" load_steps=2 format=3 uid="uid://c1px3sa4pblen"]
+
+[ext_resource type="Texture2D" uid="uid://c2hiymcobf7u5" path="res://addons/qodot/textures/grass.png" id="1_tpcwl"]
+
+[resource]
+albedo_texture = ExtResource("1_tpcwl")
+texture_filter = 0

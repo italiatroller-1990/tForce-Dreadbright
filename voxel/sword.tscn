@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://sxhxbn4hv6ds"]
+
+[ext_resource type="PackedScene" uid="uid://cxytxjfi5luij" path="res://voxel/sword.gltf" id="1_dquf1"]
+[ext_resource type="Texture2D" uid="uid://dfod0gaq0kvx5" path="res://voxel/sword_0.png" id="2_2b1es"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_excox"]
+no_depth_test = true
+albedo_texture = ExtResource("2_2b1es")
+
+[node name="sword" instance=ExtResource("1_dquf1")]
+
+[node name="Layer_1" parent="Node" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_excox")

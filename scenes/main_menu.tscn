@@ -1,0 +1,272 @@
+[gd_scene load_steps=8 format=3 uid="uid://dwpen6fccb7i4"]
+
+[ext_resource type="Texture2D" uid="uid://wetd3gy1owhe" path="res://addons/qodot/textures/brick.png" id="1_jvrb7"]
+[ext_resource type="AudioStream" uid="uid://b3bakw8i2pu3o" path="res://sfx/MAINDREAD.ogg" id="2_aj3by"]
+[ext_resource type="AudioStream" uid="uid://kgywr1h8641w" path="res://sfx/selected.wav" id="3_2ifrs"]
+[ext_resource type="AudioStream" uid="uid://iwitgemxslph" path="res://sfx/hover.wav" id="4_n5o2v"]
+
+[sub_resource type="GDScript" id="GDScript_hfpao"]
+resource_name = "Main"
+script/source = "extends Control
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	$SettingsWindow.hide()
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+	pass
+
+
+func _on_start_pressed() -> void:
+	$\"Episode Panel\".show()
+	$\"Main Panel\".hide()
+	$Selected.play()
+func _on_quit_pressed() -> void:
+	$Selected.play()
+	get_tree().quit()
+
+
+func _on_epback_pressed() -> void:
+	$Selected.play()
+	$\"Episode Panel\".hide()
+	$\"Main Panel\".show()
+
+
+func _on_ep_1_pressed() -> void:
+	get_tree().change_scene_to_file(\"res://maps/tscn/e1m1.tscn\")
+	
+
+
+func _on_settings_pressed() -> void:
+	$SettingsWindow.show()
+	$Selected.play()
+
+func _on_start_mouse_entered() -> void:
+	$Hover.play()
+
+
+func _on_settings_mouse_entered() -> void:
+	$Hover.play()
+func _on_settings_window_close_requested() -> void:
+	$SettingsWindow.hide()
+
+## SOUND HELL
+func _on_quit_mouse_entered() -> void:
+	$Hover.play()
+func _on_ep_1_mouse_entered() -> void:
+	$Hover.play()
+func _on_ep_2_mouse_entered() -> void:
+	$Hover.play()
+func _on_ep_3_mouse_entered() -> void:
+	$Hover.play()
+func _on_epback_mouse_entered() -> void:
+	$Hover.play()
+
+
+func _on_fullscreen_toggled(toggled_on: bool) -> void:
+	if toggled_on == true:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_k0wpg"]
+font_size = 24
+
+[sub_resource type="LabelSettings" id="LabelSettings_tw5qh"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_hfpao")
+
+[node name="Brick" type="Sprite2D" parent="."]
+use_parent_material = true
+position = Vector2(592, 488)
+scale = Vector2(189.464, 141.039)
+texture = ExtResource("1_jvrb7")
+metadata/_edit_group_ = true
+metadata/_edit_lock_ = true
+
+[node name="Main Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -443.0
+offset_top = -154.0
+offset_right = 443.0
+offset_bottom = 154.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+
+[node name="UI Elements" type="VBoxContainer" parent="Main Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="Main Panel/UI Elements"]
+layout_mode = 2
+text = "MAIN"
+label_settings = SubResource("LabelSettings_k0wpg")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="start" type="Button" parent="Main Panel/UI Elements"]
+layout_mode = 2
+text = "Start Game"
+
+[node name="settings" type="Button" parent="Main Panel/UI Elements"]
+layout_mode = 2
+text = "Settings"
+
+[node name="quit" type="Button" parent="Main Panel/UI Elements"]
+layout_mode = 2
+text = "Quit"
+
+[node name="Label" type="Label" parent="Main Panel/UI Elements"]
+layout_mode = 2
+text = "tForce Dreadbright 0.001 alpha, TEST BUILD, DO NOT DISTRIBUTE TO OTHER SOURCES THAN MAIN SOURCE
+BECAUSE OF SECURITY ISSUES"
+horizontal_alignment = 1
+
+[node name="Episode Panel" type="Panel" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -118.0
+offset_top = -156.0
+offset_right = 118.0
+offset_bottom = 156.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="UI" type="VBoxContainer" parent="Episode Panel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="header" type="Label" parent="Episode Panel/UI"]
+layout_mode = 2
+text = "Episode Selection
+"
+label_settings = SubResource("LabelSettings_tw5qh")
+
+[node name="ep1" type="Button" parent="Episode Panel/UI"]
+layout_mode = 2
+text = "Into the Nightmares"
+
+[node name="ep2" type="Button" parent="Episode Panel/UI"]
+layout_mode = 2
+text = "(COMING SOON)"
+
+[node name="ep3" type="Button" parent="Episode Panel/UI"]
+layout_mode = 2
+text = "(COMING SOON)"
+
+[node name="epback" type="Button" parent="Episode Panel/UI"]
+layout_mode = 2
+text = "<-- BACK"
+flat = true
+
+[node name="MAIN" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(0, 12)
+stream = ExtResource("2_aj3by")
+autoplay = true
+
+[node name="SettingsWindow" type="Window" parent="."]
+canvas_item_default_texture_filter = 0
+canvas_item_default_texture_repeat = 2
+title = "Settings"
+initial_position = 1
+size = Vector2i(520, 520)
+
+[node name="TabContainer" type="TabContainer" parent="SettingsWindow"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+current_tab = 0
+clip_tabs = false
+metadata/_edit_use_anchors_ = true
+
+[node name="Video" type="TabBar" parent="SettingsWindow/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SettingsWindow/TabContainer/Video"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="fullscreen" type="CheckButton" parent="SettingsWindow/TabContainer/Video/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Fullscreen"
+
+[node name="Audio" type="TabBar" parent="SettingsWindow/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Selected" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(-376, -220)
+stream = ExtResource("3_2ifrs")
+
+[node name="Hover" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(-376, -212)
+stream = ExtResource("4_n5o2v")
+
+[connection signal="mouse_entered" from="Main Panel/UI Elements/start" to="." method="_on_start_mouse_entered"]
+[connection signal="pressed" from="Main Panel/UI Elements/start" to="." method="_on_start_pressed"]
+[connection signal="mouse_entered" from="Main Panel/UI Elements/settings" to="." method="_on_settings_mouse_entered"]
+[connection signal="pressed" from="Main Panel/UI Elements/settings" to="." method="_on_settings_pressed"]
+[connection signal="mouse_entered" from="Main Panel/UI Elements/quit" to="." method="_on_quit_mouse_entered"]
+[connection signal="pressed" from="Main Panel/UI Elements/quit" to="." method="_on_quit_pressed"]
+[connection signal="mouse_entered" from="Episode Panel/UI/ep1" to="." method="_on_ep_1_mouse_entered"]
+[connection signal="pressed" from="Episode Panel/UI/ep1" to="." method="_on_ep_1_pressed"]
+[connection signal="mouse_entered" from="Episode Panel/UI/ep2" to="." method="_on_ep_2_mouse_entered"]
+[connection signal="mouse_entered" from="Episode Panel/UI/ep3" to="." method="_on_ep_3_mouse_entered"]
+[connection signal="mouse_entered" from="Episode Panel/UI/epback" to="." method="_on_epback_mouse_entered"]
+[connection signal="pressed" from="Episode Panel/UI/epback" to="." method="_on_epback_pressed"]
+[connection signal="close_requested" from="SettingsWindow" to="." method="_on_settings_window_close_requested"]
+[connection signal="toggled" from="SettingsWindow/TabContainer/Video/VBoxContainer/fullscreen" to="." method="_on_fullscreen_toggled"]

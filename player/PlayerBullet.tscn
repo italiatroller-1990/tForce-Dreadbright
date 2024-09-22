@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1fexeb7hm7oy"]
+
+[ext_resource type="Script" path="res://player/player_bullet.gd" id="1_8yuso"]
+[ext_resource type="Texture2D" uid="uid://bbh8kaa7fedxb" path="res://textures/projectile.png" id="2_sain3"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_kh5kl"]
+
+[node name="PlayerBullet" type="Area3D"]
+script = ExtResource("1_8yuso")
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+billboard = 1
+texture = ExtResource("2_sain3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(0.524547, 0, 0, 0, 0.524547, 0, 0, 0, 0.524547, 0, 0, 0)
+shape = SubResource("BoxShape3D_kh5kl")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]

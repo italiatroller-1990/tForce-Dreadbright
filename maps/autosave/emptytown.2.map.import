@@ -1,0 +1,14 @@
+[remap]
+
+importer="qodot.map"
+type="Resource"
+uid="uid://c1cqi7x247c6w"
+path="res://.godot/imported/emptytown.2.map-f84a814ba2d7064033f65fad1b0b2b48.tres"
+
+[deps]
+
+source_file="res://maps/autosave/emptytown.2.map"
+dest_files=["res://.godot/imported/emptytown.2.map-f84a814ba2d7064033f65fad1b0b2b48.tres"]
+
+[params]
+

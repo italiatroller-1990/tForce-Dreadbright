@@ -1,0 +1,13 @@
+[gd_scene load_steps=4 format=3 uid="uid://b47g5bonu40q8"]
+
+[ext_resource type="PackedScene" uid="uid://cmtu75gpkvjw7" path="res://voxel/shotgun.gltf" id="1_xtynt"]
+[ext_resource type="Texture2D" uid="uid://bfshtl3bqvnc6" path="res://voxel/shotgun_0.png" id="2_74c4a"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_vtiaq"]
+no_depth_test = true
+albedo_texture = ExtResource("2_74c4a")
+
+[node name="shotgun" instance=ExtResource("1_xtynt")]
+
+[node name="Layer_1" parent="Node" index="0"]
+surface_material_override/0 = SubResource("StandardMaterial3D_vtiaq")

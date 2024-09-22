@@ -1,0 +1,29 @@
+[gd_scene load_steps=5 format=3 uid="uid://bvimmc8sw8hrx"]
+
+[sub_resource type="GDScript" id="GDScript_tmmee"]
+script/source = "extends CharacterBody3D
+
+
+func _ready() -> void:
+	pass
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_iehfe"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_grehl"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_41yit"]
+
+[node name="Enemy" type="CharacterBody3D"]
+script = SubResource("GDScript_tmmee")
+
+[node name="Area3D" type="Area3D" parent="." groups=["enemy"]]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("CapsuleShape3D_iehfe")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_grehl")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CapsuleMesh_41yit")
