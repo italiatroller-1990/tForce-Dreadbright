@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dkvmj0pdtlf8g"]
+[gd_scene load_steps=16 format=3 uid="uid://dkvmj0pdtlf8g"]
 
 [ext_resource type="PackedScene" uid="uid://b1fexeb7hm7oy" path="res://player/PlayerBullet.tscn" id="1_y083q"]
 [ext_resource type="AudioStream" uid="uid://bt23ovrivcsvv" path="res://sfx/jump.mp3" id="3_yidpl"]
@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" uid="uid://kax0vlfyxiks" path="res://voxel/pistol.tscn" id="6_34j3y"]
 [ext_resource type="PackedScene" uid="uid://sxhxbn4hv6ds" path="res://voxel/sword.tscn" id="6_85jpn"]
 [ext_resource type="Texture2D" uid="uid://bs0lucpnflrc8" path="res://textures/muzzle.png" id="6_qrmvg"]
+[ext_resource type="AudioStream" uid="uid://dyhfivrtxpilt" path="res://sfx/pistol-shoot.ogg" id="7_tq4rh"]
+[ext_resource type="Texture2D" uid="uid://b3hnxs6yve3xp" path="res://textures/health.png" id="8_ny82c"]
 
 [sub_resource type="GDScript" id="GDScript_nm3gu"]
 resource_name = "Player definitions"
@@ -23,6 +25,7 @@ var jump_speed = 5
 @onready var sword = $Camera3D/sword 
 @onready var pistol = $Camera3D/pistol
 @onready var sword_collision = $Camera3D/sword/SwordCollision
+@onready var pause_menu = $PauseMenu
 @export var bullet:PackedScene
 
 ## hide ui elements and capture mouse
@@ -30,8 +33,6 @@ func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	$Camera3D/sword/SwordCollision/CollisionShape3D.disabled = true
 	sword_collision.monitoring = false
-	$UI/Pause.hide()
-#	$UI/Hint.hide()
 
 ## movement
 func _physics_process(delta):
@@ -58,6 +59,7 @@ func _physics_process(delta):
 		owner.add_child(b)
 		b.transform = $Camera3D/pos.global_transform
 		shoot = 0
+		$\"Camera3D/shoot-pistol\".play()
 		switch_weapon = 0
 		anim_player.play(\"shoot\")
 ## weapon switcher definitions
@@ -74,11 +76,6 @@ func _input(event):
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		$Camera3D.rotate_x(-event.relative.y * mouse_sensitivity)
 		$Camera3D.rotation.x = clampf($Camera3D.rotation.x, -deg_to_rad(70), deg_to_rad(70))
-	if event.is_action_pressed(\"ui_cancel\"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		$UI/Pause.show()
-		$UI/Crosshair.hide()
-		get_tree().paused = true
 		
 ## weapon switcher
 	if event.is_action_pressed(\"weapon1\") and switch_weapon == 1:
@@ -89,22 +86,31 @@ func _input(event):
 		sword_select = 0
 
 ## pause funcs
-func _on_unpause_pressed() -> void:
+	if event.is_action_pressed(\"ui_cancel\"):
+		pause_menu.show()
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_tree().paused = true
+		
+func _on_resume_pressed() -> void:
 	get_tree().paused = false
-	$UI/Crosshair.show()
-	$UI/Pause.hide()
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-
-func _on_exit_pressed() -> void:
+	pause_menu.hide()
+	
+func _on_quit_main_menu_pressed() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file(\"res://scenes/main_menu.tscn\")
-		
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
+func _on_quit_game_pressed() -> void:
+	get_tree().quit()
+
+## area3d stuffs
 func _on_sword_collision_area_entered(area: Area3D) -> void:
 	if area.is_in_group(\"enemy\"):
 		print(\"enemy hit\")
 	print(\"solid hit\")
 
-
+## animation stuffs
 func _on_animation_player_animation_finished(anim_name: StringName) -> void:
 	if anim_name == \"shoot\":
 		anim_player.play(\"RESET\")
@@ -265,10 +271,6 @@ _data = {
 [sub_resource type="BoxShape3D" id="BoxShape3D_3mypf"]
 size = Vector3(14.2102, 101.664, 54.3815)
 
-[sub_resource type="LabelSettings" id="LabelSettings_3mqot"]
-font_size = 54
-font_color = Color(0.984314, 0.945098, 0.780392, 1)
-
 [node name="Player" type="CharacterBody3D"]
 floor_constant_speed = true
 script = SubResource("GDScript_nm3gu")
@@ -279,7 +281,8 @@ shape = SubResource("CapsuleShape3D_dcvek")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.567659, 0)
-fov = 90.0
+current = true
+fov = 100.0
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="Camera3D"]
 libraries = {
@@ -316,7 +319,40 @@ billboard = 2
 texture_filter = 0
 texture = ExtResource("6_qrmvg")
 
-[node name="UI" type="Control" parent="."]
+[node name="shoot-pistol" type="AudioStreamPlayer3D" parent="Camera3D"]
+stream = ExtResource("7_tq4rh")
+
+[node name="HUD" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Health" type="Sprite2D" parent="HUD"]
+position = Vector2(32, 616)
+scale = Vector2(2, 2)
+texture = ExtResource("8_ny82c")
+
+[node name="Crosshair" type="ColorRect" parent="HUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -8.0
+offset_top = -8.0
+offset_right = 8.0
+offset_bottom = 8.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.337735, 0.562917, 0.853618, 1)
+
+[node name="PauseMenu" type="Control" parent="."]
+process_mode = 2
+visible = false
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -330,49 +366,22 @@ offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Pause" type="Panel" parent="UI"]
-process_mode = 2
+[node name="Background" type="ColorRect" parent="PauseMenu"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -147.0
-offset_top = -112.0
-offset_right = 147.0
-offset_bottom = 112.0
+offset_left = -96.0
+offset_top = -124.0
+offset_right = 96.0
+offset_bottom = 124.0
 grow_horizontal = 2
 grow_vertical = 2
+color = Color(0.233925, 0.233925, 0.233925, 1)
 
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/Pause"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -75.0
-offset_top = -46.5
-offset_right = 75.0
-offset_bottom = 46.5
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Label" type="Label" parent="UI/Pause/VBoxContainer"]
-layout_mode = 2
-text = "PAUSED"
-horizontal_alignment = 1
-
-[node name="unpause" type="Button" parent="UI/Pause/VBoxContainer"]
-layout_mode = 2
-text = "Unpause"
-
-[node name="exit" type="Button" parent="UI/Pause/VBoxContainer"]
-layout_mode = 2
-text = "Exit to main menu"
-
-[node name="Crosshair" type="Label" parent="UI"]
+[node name="UIContainer" type="VBoxContainer" parent="PauseMenu"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -380,41 +389,33 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -20.0
-offset_top = -11.5
+offset_top = -20.0
 offset_right = 20.0
-offset_bottom = 11.5
+offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "+"
-label_settings = SubResource("LabelSettings_3mqot")
-horizontal_alignment = 1
 
-[node name="HUD" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -20.0
-offset_top = -40.0
-offset_right = 20.0
-grow_horizontal = 2
-grow_vertical = 0
+[node name="Label" type="Label" parent="PauseMenu/UIContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 6
+text = "Game Paused"
 
-[node name="Panel" type="Panel" parent="HUD"]
-layout_mode = 1
-anchors_preset = -1
-anchor_left = -55.9
-anchor_right = 56.1
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="Resume" type="Button" parent="PauseMenu/UIContainer"]
+layout_mode = 2
+text = "Resume"
 
-[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
-update_mode = 1
+[node name="QuitMainMenu" type="Button" parent="PauseMenu/UIContainer"]
+layout_mode = 2
+text = "Quit to main menu"
+
+[node name="QuitGame" type="Button" parent="PauseMenu/UIContainer"]
+layout_mode = 2
+text = "Quit to desktop"
 
 [connection signal="animation_finished" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
 [connection signal="animation_started" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_started"]
 [connection signal="area_entered" from="Camera3D/sword/SwordCollision" to="." method="_on_sword_collision_area_entered"]
-[connection signal="pressed" from="UI/Pause/VBoxContainer/unpause" to="." method="_on_unpause_pressed"]
-[connection signal="pressed" from="UI/Pause/VBoxContainer/exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="PauseMenu/UIContainer/Resume" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="PauseMenu/UIContainer/QuitMainMenu" to="." method="_on_quit_main_menu_pressed"]
+[connection signal="pressed" from="PauseMenu/UIContainer/QuitGame" to="." method="_on_quit_game_pressed"]
