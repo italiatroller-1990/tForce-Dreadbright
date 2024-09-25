@@ -1,19 +1,33 @@
-[gd_scene load_steps=4 format=3 uid="uid://b1fexeb7hm7oy"]
+[gd_scene load_steps=5 format=3 uid="uid://b1fexeb7hm7oy"]
 
 [ext_resource type="Script" path="res://player/player_bullet.gd" id="1_8yuso"]
-[ext_resource type="Texture2D" uid="uid://bbh8kaa7fedxb" path="res://textures/projectile.png" id="2_sain3"]
+[ext_resource type="PackedScene" uid="uid://bd7dk1be7mw8f" path="res://voxel/bullet.gltf" id="2_efj8r"]
+[ext_resource type="AudioStream" uid="uid://dgrkf3wq3vhdc" path="res://sfx/hit-bullet.mp3" id="3_q5quh"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kh5kl"]
+size = Vector3(1, 0.345, 1.55)
 
 [node name="PlayerBullet" type="Area3D"]
 script = ExtResource("1_8yuso")
 
-[node name="Sprite3D" type="Sprite3D" parent="."]
-billboard = 1
-texture = ExtResource("2_sain3")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.524547, 0, 0, 0, 0.524547, 0, 0, 0, 0.524547, 0, 0, 0)
+transform = Transform3D(0.524547, 0, 0, 0, 1.53695, 0, 0, 0, 0.524547, 0, 0.313417, 0)
 shape = SubResource("BoxShape3D_kh5kl")
 
+[node name="bullet" parent="." instance=ExtResource("2_efj8r")]
+transform = Transform3D(0.0501861, 0, 0, 0, 0.0501861, 0, 0, 0, 0.0501861, 0, 0, 0)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(0.945601, 0.650968, 0.284256, 1)
+omni_shadow_mode = 0
+
+[node name="hit sfx" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("3_q5quh")
+volume_db = 21.45
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 5.0
+autostart = true
+
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

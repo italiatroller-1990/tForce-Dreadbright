@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://wetd3gy1owhe" path="res://addons/qodot/textures/brick.png" id="1_jvrb7"]
 [ext_resource type="AudioStream" uid="uid://b3bakw8i2pu3o" path="res://sfx/MAINDREAD.ogg" id="2_aj3by"]
-[ext_resource type="AudioStream" uid="uid://kgywr1h8641w" path="res://sfx/selected.wav" id="3_2ifrs"]
+[ext_resource type="AudioStream" uid="uid://dyhfivrtxpilt" path="res://sfx/pistol-shoot.ogg" id="4_2xdc0"]
 [ext_resource type="AudioStream" uid="uid://iwitgemxslph" path="res://sfx/hover.wav" id="4_n5o2v"]
 
 [sub_resource type="GDScript" id="GDScript_hfpao"]
@@ -248,9 +248,30 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 1
 
+[node name="Credits" type="TabBar" parent="SettingsWindow/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="creditstext" type="Label" parent="SettingsWindow/TabContainer/Credits"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "-SFX-
+ZapSplat
+Soundmorph (on Soundsnap)
+-The rest of the things-
+Myself (Italia Troller)"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
 [node name="Selected" type="AudioStreamPlayer2D" parent="."]
 position = Vector2(-376, -220)
-stream = ExtResource("3_2ifrs")
+stream = ExtResource("4_2xdc0")
 
 [node name="Hover" type="AudioStreamPlayer2D" parent="."]
 position = Vector2(-376, -212)

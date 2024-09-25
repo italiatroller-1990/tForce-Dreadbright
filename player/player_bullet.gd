@@ -1,7 +1,7 @@
 extends Area3D
 
 # Speed of the projectile
-var speed: float = 50.0
+var speed: float = 45
 var lifetime: float = 3.0  # Time before the projectile is removed
 
 # Called when the projectile is instantiated
@@ -20,6 +20,12 @@ func _process(delta: float) -> void:
 func _on_area_entered(area: Area3D) -> void:
 	print("solid hit!")
 	queue_free()
+	$"hit sfx".play()
 	if area.is_in_group("enemy"):
 		print("enemy hit!")
 		queue_free()
+
+
+func _on_timer_timeout() -> void:
+	print("bullet disappeared")
+	queue_free()

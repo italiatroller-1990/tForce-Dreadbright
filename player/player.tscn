@@ -7,7 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://sxhxbn4hv6ds" path="res://voxel/sword.tscn" id="6_85jpn"]
 [ext_resource type="Texture2D" uid="uid://bs0lucpnflrc8" path="res://textures/muzzle.png" id="6_qrmvg"]
 [ext_resource type="AudioStream" uid="uid://dyhfivrtxpilt" path="res://sfx/pistol-shoot.ogg" id="7_tq4rh"]
-[ext_resource type="Texture2D" uid="uid://b3hnxs6yve3xp" path="res://textures/health.png" id="8_ny82c"]
+[ext_resource type="AudioStream" uid="uid://iwitgemxslph" path="res://sfx/hover.wav" id="8_k4dwp"]
 
 [sub_resource type="GDScript" id="GDScript_nm3gu"]
 resource_name = "Player definitions"
@@ -56,7 +56,7 @@ func _physics_process(delta):
 		switch_weapon = 0
 	if Input.is_action_pressed(\"shoot\") and shoot == 1 and pistol_select == 1 and sword_select == 0:
 		var b = bullet.instantiate()
-		owner.add_child(b)
+		owner.add_sibling(b)
 		b.transform = $Camera3D/pos.global_transform
 		shoot = 0
 		$\"Camera3D/shoot-pistol\".play()
@@ -77,7 +77,7 @@ func _input(event):
 		$Camera3D.rotate_x(-event.relative.y * mouse_sensitivity)
 		$Camera3D.rotation.x = clampf($Camera3D.rotation.x, -deg_to_rad(70), deg_to_rad(70))
 		
-## weapon switcher
+# switch_weapon variable is useful
 	if event.is_action_pressed(\"weapon1\") and switch_weapon == 1:
 		pistol_select = 0
 		sword_select = 1
@@ -90,19 +90,31 @@ func _input(event):
 		pause_menu.show()
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		get_tree().paused = true
-		
-func _on_resume_pressed() -> void:
+
+func _on_resume_focus_entered() -> void:
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	$PauseMenu/pressed.play()
 	pause_menu.hide()
-	
+
 func _on_quit_main_menu_pressed() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file(\"res://scenes/main_menu.tscn\")
+	$PauseMenu/pressed.play()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	
+
 func _on_quit_game_pressed() -> void:
+	$PauseMenu/pressed.play()
 	get_tree().quit()
+
+func _on_resume_mouse_entered() -> void:
+	$PauseMenu/hover.play()
+
+func _on_quit_main_menu_mouse_entered() -> void:
+	$PauseMenu/hover.play()
+
+func _on_quit_game_mouse_entered() -> void:
+	$PauseMenu/hover.play()
 
 ## area3d stuffs
 func _on_sword_collision_area_entered(area: Area3D) -> void:
@@ -296,7 +308,7 @@ stream = ExtResource("3_yidpl")
 stream = ExtResource("5_28mk4")
 
 [node name="pos" type="Marker3D" parent="Camera3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00500011, -0.414285, -0.841936)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.394916, -0.488555)
 
 [node name="sword" parent="Camera3D" instance=ExtResource("6_85jpn")]
 transform = Transform3D(-0.00496053, -5.71197e-09, -0.0185131, 0.00925655, 0.0165984, -0.00248027, 0.0160328, -0.0095831, -0.00429595, 0.28, -0.448663, -0.235)
@@ -330,11 +342,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Health" type="Sprite2D" parent="HUD"]
-position = Vector2(32, 616)
-scale = Vector2(2, 2)
-texture = ExtResource("8_ny82c")
-
 [node name="Crosshair" type="ColorRect" parent="HUD"]
 layout_mode = 1
 anchors_preset = 8
@@ -349,6 +356,18 @@ offset_bottom = 8.0
 grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.337735, 0.562917, 0.853618, 1)
+
+[node name="Health" type="TextureProgressBar" parent="HUD"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.950617
+anchor_right = 0.0833333
+anchor_bottom = 1.0
+grow_vertical = 0
+tint_under = Color(0.91505, 0, 0.161881, 1)
+tint_over = Color(0.211184, 0.941118, 0, 1)
+tint_progress = Color(0.19322, 0.347825, 0.614411, 1)
+metadata/_edit_use_anchors_ = true
 
 [node name="PauseMenu" type="Control" parent="."]
 process_mode = 2
@@ -413,9 +432,18 @@ text = "Quit to main menu"
 layout_mode = 2
 text = "Quit to desktop"
 
+[node name="hover" type="AudioStreamPlayer2D" parent="PauseMenu"]
+stream = ExtResource("8_k4dwp")
+
+[node name="pressed" type="AudioStreamPlayer2D" parent="PauseMenu"]
+stream = ExtResource("7_tq4rh")
+
 [connection signal="animation_finished" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
 [connection signal="animation_started" from="Camera3D/AnimationPlayer" to="." method="_on_animation_player_animation_started"]
 [connection signal="area_entered" from="Camera3D/sword/SwordCollision" to="." method="_on_sword_collision_area_entered"]
-[connection signal="pressed" from="PauseMenu/UIContainer/Resume" to="." method="_on_resume_pressed"]
+[connection signal="focus_entered" from="PauseMenu/UIContainer/Resume" to="." method="_on_resume_focus_entered"]
+[connection signal="mouse_entered" from="PauseMenu/UIContainer/Resume" to="." method="_on_resume_mouse_entered"]
+[connection signal="mouse_entered" from="PauseMenu/UIContainer/QuitMainMenu" to="." method="_on_quit_main_menu_mouse_entered"]
 [connection signal="pressed" from="PauseMenu/UIContainer/QuitMainMenu" to="." method="_on_quit_main_menu_pressed"]
+[connection signal="mouse_entered" from="PauseMenu/UIContainer/QuitGame" to="." method="_on_quit_game_mouse_entered"]
 [connection signal="pressed" from="PauseMenu/UIContainer/QuitGame" to="." method="_on_quit_game_pressed"]
