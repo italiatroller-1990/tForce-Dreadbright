@@ -1,21 +1,39 @@
-[gd_scene load_steps=5 format=3 uid="uid://b1fexeb7hm7oy"]
+[gd_scene load_steps=9 format=3 uid="uid://b1fexeb7hm7oy"]
 
 [ext_resource type="Script" path="res://player/player_bullet.gd" id="1_8yuso"]
-[ext_resource type="PackedScene" uid="uid://bd7dk1be7mw8f" path="res://voxel/bullet.gltf" id="2_efj8r"]
 [ext_resource type="AudioStream" uid="uid://dgrkf3wq3vhdc" path="res://sfx/hit-bullet.mp3" id="3_q5quh"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_kh5kl"]
 size = Vector3(1, 0.345, 1.55)
 
+[sub_resource type="BoxMesh" id="BoxMesh_1yose"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_f8nbh"]
+albedo_color = Color(1, 0.345098, 0, 1)
+albedo_texture_force_srgb = true
+albedo_texture_msdf = true
+metallic_specular = 1.0
+texture_filter = 0
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_hqcc1"]
+emission_shape = 3
+emission_box_extents = Vector3(1, 1, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e7k06"]
+albedo_color = Color(1, 0.364706, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_p51my"]
+material = SubResource("StandardMaterial3D_e7k06")
+uv2_padding = 1.0
+size = Vector3(0.2, 0.2, 0.2)
+subdivide_width = 8
+
 [node name="PlayerBullet" type="Area3D"]
 script = ExtResource("1_8yuso")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.524547, 0, 0, 0, 1.53695, 0, 0, 0, 0.524547, 0, 0.313417, 0)
+transform = Transform3D(0.524547, 0, 0, 0, 1.53695, 0, 0, 0, 0.524547, 0, 0, 0)
 shape = SubResource("BoxShape3D_kh5kl")
-
-[node name="bullet" parent="." instance=ExtResource("2_efj8r")]
-transform = Transform3D(0.0501861, 0, 0, 0, 0.0501861, 0, 0, 0, 0.0501861, 0, 0, 0)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 light_color = Color(0.945601, 0.650968, 0.284256, 1)
@@ -28,6 +46,20 @@ volume_db = 21.45
 [node name="Timer" type="Timer" parent="."]
 wait_time = 5.0
 autostart = true
+
+[node name="mesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.102981, 0, 0, 0, 0.0838388, 0, 0, 0, 0.955649, 0, 0, 0)
+mesh = SubResource("BoxMesh_1yose")
+surface_material_override/0 = SubResource("StandardMaterial3D_f8nbh")
+
+[node name="GPUParticles3D" type="GPUParticles3D" parent="mesh"]
+transform = Transform3D(1.1123, 0, 0, 0, 0.242552, 0, 0, 0, 0.513915, 0, 0.894574, 0.0261602)
+amount = 7
+amount_ratio = 0.71
+visibility_aabb = AABB(-0.969879, -6.14452, -0.996246, 1.92041, 7.07824, 1.85281)
+draw_order = 1
+process_material = SubResource("ParticleProcessMaterial_hqcc1")
+draw_pass_1 = SubResource("BoxMesh_p51my")
 
 [connection signal="area_entered" from="." to="." method="_on_area_entered"]
 [connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]

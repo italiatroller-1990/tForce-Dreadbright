@@ -1,7 +1,7 @@
 extends Area3D
 
 # Speed of the projectile
-var speed: float = 45
+var speed: float = 30
 var lifetime: float = 3.0  # Time before the projectile is removed
 
 # Called when the projectile is instantiated
