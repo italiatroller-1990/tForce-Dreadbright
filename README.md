@@ -4,3 +4,4 @@ tForce Dreadbright's source code
 1. Godot dev branch
 2. Some knowledge of GDScript or just add new files
 # THIS IS W.I.P, SO YOU WOULD EXPECT BUGS!
+# THIS PROJECT IS ARCHIVED BECAUSE IT'LL TRANSFER TO ANOTHER REPO!
